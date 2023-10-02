@@ -1,0 +1,70 @@
+package dataclass;
+
+public class Product {
+  int productId;
+  String productName;
+  double price;
+  boolean isSoldOut;
+  boolean isActive;
+
+  public Product(){}
+
+  public Product(int productId, String productName, double price) {
+    this.productId = productId;
+    this.productName = productName;
+    this.price = price;
+    this.isSoldOut = false;
+    this.isActive = true;
+  }
+
+  public Product(int productId, String productName, double price, boolean isSoldOut, boolean isActive) {
+    this.productId = productId;
+    this.productName = productName;
+    this.price = price;
+    this.isSoldOut = isSoldOut;
+    this.isActive = isActive;
+  }
+
+  public int getProductId() {
+    return productId;
+  }
+
+  public String getProductCode() {
+    return String.format("P%05d", productId);
+  }
+  public String getPriceString() {
+    return String.format("%.2f", price);
+  }
+
+  public String getProductName() {
+    return productName;
+  }
+
+  public String getIsInStockText(){
+    return (isSoldOut) ? "Sold Out" : "In Stock";
+  }
+
+  public double getPrice() {
+    return price;
+  }
+
+  public void setSoldOut() {
+    isSoldOut = !isSoldOut;
+  }
+
+  public void setActive() {
+    isActive = !isActive;
+  }
+
+  public void setProductInfo(String productName, Double price){
+    this.productName = productName;
+    this.price = price;
+  }
+
+  public String objectToLineFormat(){
+    return  productId + "," + productName + ","+ price + ","
+            + ((isSoldOut) ? "1" : "0") + "," + ((isActive) ? "1" : "0")
+            ;
+  }
+
+}
