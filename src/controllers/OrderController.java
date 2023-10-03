@@ -2,7 +2,6 @@ package controllers;
 
 import dataclass.Order;
 import manager.OrderManager;
-import manager.ProductManager;
 import manager.ShopManager;
 import shop.Frontend;
 import utility.stats.MainState;
@@ -16,17 +15,16 @@ public class OrderController {
   Scanner scan = new Scanner(System.in);
   OrderView view = new OrderView();
 
-  ShopManager mainObject;
+  ShopManager shopManager;
   OrderManager orderManager;
-  ProductManager productManager;
 
-  public OrderController(ShopManager mainObject) {
-    this.mainObject = mainObject;
-    orderManager =  new OrderManager(mainObject);
+  public OrderController(ShopManager shopManager) {
+    this.shopManager = shopManager;
+    orderManager =  new OrderManager(shopManager);
   }
 
   public void menu() {
-    if (!mainObject.isHasAdminPermission()) return;
+    if (!shopManager.isHasAdminPermission()) return;
 
     boolean run = true;
     while (run) {
@@ -38,7 +36,7 @@ public class OrderController {
       // toUpperCase to check Q command
       switch (choice.toUpperCase()) {
         case "1" -> listAll();
-        case "2" -> search();
+        case "2" -> OrderDetail();
         case "3" -> update();
         case "4" -> delete();
         case "Q" -> run = false; // quit while loop
@@ -48,17 +46,19 @@ public class OrderController {
   }
 
   private void listAll() {
-    if (!mainObject.isHasBothPermission()) return;
+    if (!shopManager.isHasBothPermission()) return;
     orderManager.showAllItems();
   }
 
-  private void search() {
-    if (!mainObject.isHasAdminPermission()) return;
+  private void OrderDetail() {
+    if (!shopManager.isHasAdminPermission()) return;
 
-    if (mainObject.products.isEmpty()) {
+    if (shopManager.products.isEmpty()) {
       view.printEmptyItem();
       return;
     }
+
+    orderManager.showAllItems();
 
     view.printBackendOrderMenu(OperationState.SEARCH);
     // select menu
@@ -76,9 +76,9 @@ public class OrderController {
 
 
   private void update() {
-    if (!mainObject.isHasAdminPermission()) return;
+    if (!shopManager.isHasAdminPermission()) return;
 
-    mainObject.mainState = MainState.ORDER_ITEM;
+    shopManager.mainState = MainState.ORDER_ITEM;
 
     while (true) {
       listAll();
@@ -104,9 +104,9 @@ public class OrderController {
 
   // Only pending order
   private void delete() {
-    if (!mainObject.isHasAdminPermission()) return;
+    if (!shopManager.isHasAdminPermission()) return;
 
-    if (mainObject.orders.isEmpty()) {
+    if (shopManager.orders.isEmpty()) {
       view.printEmptyItem();
       return;
     }
@@ -114,9 +114,9 @@ public class OrderController {
     while (true) {
       // Get only pending order
       ArrayList<Order> orders = new ArrayList<>();
-      for (int i = 0; i < mainObject.orders.size(); i++) {
-        if (mainObject.orders.get(i).getIsPending())
-          orders.add(mainObject.orders.get(i));
+      for (int i = 0; i < shopManager.orders.size(); i++) {
+        if (shopManager.orders.get(i).getIsPending())
+          orders.add(shopManager.orders.get(i));
       }
       orderManager.printOrderList(orders);
 
@@ -140,21 +140,21 @@ public class OrderController {
   }
 
   private void confirmOrder(){
-    if (!mainObject.isHasCustomerPermission()) {
-      Frontend frontend = new Frontend(mainObject, mainObject.authObject);
+    if (!shopManager.isHasCustomerPermission()) {
+      Frontend frontend = new Frontend(shopManager, shopManager.authObject);
       frontend.authenticationMenu();
       //mainObject.authObject.customerLogin();
       return;
     }
 
-    if (mainObject.tempOrderItems.isEmpty()) {
+    if (shopManager.tempOrderItems.isEmpty()) {
       view.printEmptyItem();
       return;
     }
 
     // confirm order and clear temp order items
     orderManager.confirmOrder();
-    mainObject.tempOrderItems = new ArrayList<>();
+    shopManager.tempOrderItems = new ArrayList<>();
 
   }
 

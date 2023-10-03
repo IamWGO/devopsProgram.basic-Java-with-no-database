@@ -12,10 +12,6 @@ public class Customer {
   String country;
   boolean isActive;
 
-  public Customer(){
-
-  }
-
   public Customer(int customerId, String firstname, String lastname, String username, String password,
                   String email, String address, String zipCode, String country, boolean isActive) {
     this.customerId = customerId;

@@ -104,14 +104,15 @@ public class ProductView {
   }
 
   public void printHeadLine(){
-    printOut.printDashLine(67);
+    printOut.printDashLine(97);
     printOut.println(
             printOut.addWhiteSpace("No.",4) + "|"
                     + printOut.addWhiteSpace("Code" ,8) + "|"
                     + printOut.addWhiteSpace("Product Name" ,30) + "|"
+                    + printOut.addWhiteSpace("Product Detail" ,30) + "|"
                     + printOut.addWhiteSpace("Price",10) + "|"
                     + printOut.addWhiteSpace("Status",10) + "|");
-    printOut.printDashLine(67);
+    printOut.printDashLine(97);
 
   }
 
@@ -120,6 +121,7 @@ public class ProductView {
             printOut.addWhiteSpace((rowIndex +1) + ". ",4) + "|"
                     + printOut.addWhiteSpace(currentItem.getProductCode() ,8) + "|"
                     + printOut.addWhiteSpace(currentItem.getProductName(),30) + "|"
+                    + printOut.addWhiteSpace(currentItem.getProductDetail(),30) + "|"
                     + printOut.addWhiteSpace(currentItem.getPriceString(),10) + "|"
                     + printOut.addWhiteSpace(currentItem.getIsInStockText(),10)
     );

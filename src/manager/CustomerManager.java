@@ -11,17 +11,17 @@ public class CustomerManager {
   Scanner scan = new Scanner(System.in);
   CustomerView view = new CustomerView();
 
-  ShopManager mainObject;
-  public CustomerManager(ShopManager mainObject) {
-    this.mainObject = mainObject;
+  ShopManager shopManager;
+  public CustomerManager(ShopManager shopManager) {
+    this.shopManager = shopManager;
   }
 
   public void showCustomerList(){
-    if (!mainObject.isHasBothPermission()) return;
+    if (!shopManager.isHasBothPermission()) return;
 
     view.printHeadLine();
-    for (int i = 0; i < mainObject.customers.size(); i++) {
-      view.printRow(i, mainObject.customers.get(i));
+    for (int i = 0; i < shopManager.customers.size(); i++) {
+      view.printRow(i, shopManager.customers.get(i));
     }
     view.printFooter();
   }
@@ -46,8 +46,8 @@ public class CustomerManager {
 
   public void addNewItem(Customer newItem){
     String contentLine = newItem.objectToLineFormat();
-    mainObject.customers.add(newItem);
-    mainObject.addNewLine(contentLine);
+    shopManager.customers.add(newItem);
+    shopManager.addNewLine(contentLine);
     view.printAddResult(newItem);
   }
 
@@ -77,17 +77,17 @@ public class CustomerManager {
   }
 
   public void updateStatus(int itemIndex){
-    Customer selectedItem = mainObject.customers.get(itemIndex);
+    Customer selectedItem = shopManager.customers.get(itemIndex);
     selectedItem.setActive();
     // Overwrite file
     rewriteFile();
   }
 
   public void deleteCustomer(int itemIndex){
-    Customer selectedItem = mainObject.customers.get(itemIndex);
+    Customer selectedItem = shopManager.customers.get(itemIndex);
 
     if (!checkIfHasOrder(selectedItem.getCustomerId())) {
-      mainObject.customers.remove(itemIndex);
+      shopManager.customers.remove(itemIndex);
       // Overwrite file
       rewriteFile();
       view.printDeleteResult(true, selectedItem);
@@ -97,8 +97,8 @@ public class CustomerManager {
   }
 
   public boolean checkIfHasOrder(int customerId) {
-    for (int i = 0; i < mainObject.orders.size(); i++) {
-      if ( mainObject.orders.get(i).getCustomerId() == customerId)
+    for (int i = 0; i < shopManager.orders.size(); i++) {
+      if ( shopManager.orders.get(i).getCustomerId() == customerId)
         return true;
     }
     return false;
@@ -106,35 +106,35 @@ public class CustomerManager {
 
   public void rewriteFile() {
     //set mainState to get filename
-    mainObject.mainState = MainState.CUSTOMER;
+    shopManager.mainState = MainState.CUSTOMER;
     // Rewrite file because we remove an item form ArrayList
     String contentLines = "";
     ArrayList<Customer> tempCustomers = new ArrayList<>();
-    for (int i = 0; i < mainObject.customers.size(); i++) {
-      contentLines = contentLines.concat(mainObject.customers.get(i).objectToLineFormat());
-      if (i < mainObject.customers.size()-1) contentLines = contentLines.concat("\n");
+    for (int i = 0; i < shopManager.customers.size(); i++) {
+      contentLines = contentLines.concat(shopManager.customers.get(i).objectToLineFormat());
+      if (i < shopManager.customers.size()-1) contentLines = contentLines.concat("\n");
 
-      tempCustomers.add(mainObject.customers.get(i));
+      tempCustomers.add(shopManager.customers.get(i));
     }
 
-    mainObject.customers = tempCustomers;
-    mainObject.overwriteFile(contentLines);
+    shopManager.customers = tempCustomers;
+    shopManager.overwriteFile(contentLines);
   }
 
   public int getCustomerIndexItemById(int customerId){
-    for (int i = 0; i < mainObject.customers.size(); i++) {
-      if (mainObject.customers.get(i).getCustomerId() == customerId) {
+    for (int i = 0; i < shopManager.customers.size(); i++) {
+      if (shopManager.customers.get(i).getCustomerId() == customerId) {
         return i;
       }
     }
     return -1;
   }
   public int getNextId(){
-    if (mainObject.customers.isEmpty()) return 1;
+    if (shopManager.customers.isEmpty()) return 1;
 
     int maxProductId = -1;
 
-    for (Customer customer : mainObject.customers) {
+    for (Customer customer : shopManager.customers) {
       if (customer.getCustomerId() > maxProductId) {
         maxProductId = customer.getCustomerId();
       }
@@ -145,7 +145,7 @@ public class CustomerManager {
 
   public int searchByItemIndex(int itemIndex){
     //search start from 0 ... n
-    if (itemIndex < 0 || itemIndex > (mainObject.customers.size())) {
+    if (itemIndex < 0 || itemIndex > (shopManager.customers.size())) {
       return -1;
     }
     return itemIndex;
@@ -155,7 +155,7 @@ public class CustomerManager {
     try {
       int choice = Integer.parseInt(inputString);
       // if choice is not in range then return -1
-      if (choice < 0 || choice > (mainObject.customers.size())) {
+      if (choice < 0 || choice > (shopManager.customers.size())) {
         return -1;
       }
       // return selected index

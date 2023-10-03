@@ -92,7 +92,7 @@ public class TestManageFile {
         fileService.choose();
       }
       case PRODUCT -> {
-        Product newItem = new Product(1, "Product 1", 100);
+        Product newItem = new Product(1, "Product 1", "product detail", 100);
         writeToFileText = newItem.objectToLineFormat();
         fileService.choose();
       }
@@ -124,9 +124,9 @@ public class TestManageFile {
       case ADMIN -> System.out.println("admin();");
       case PRODUCT -> {
         ArrayList<Product> dummyItems = new ArrayList<>();
-        dummyItems.add(new Product(1, "Product 1", 100));
-        dummyItems.add(new Product(1, "Product 2", 100));
-        dummyItems.add(new Product(1, "Product 3", 100));
+        dummyItems.add(new Product(1, "Product 1","-",  100));
+        dummyItems.add(new Product(1, "Product 2","-", 100));
+        dummyItems.add(new Product(1, "Product 3","-", 100));
 
         for (int i = 0; i < dummyItems.size(); i++) {
           writeToFileText = writeToFileText.concat(dummyItems.get(i).objectToLineFormat());

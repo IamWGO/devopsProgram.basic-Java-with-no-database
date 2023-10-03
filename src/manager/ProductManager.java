@@ -48,6 +48,7 @@ public class ProductManager {
   public Product newItemForm(){
     view.printText("::::: New Product ::::: \n");
     String productName = newItemInputForm("Product Name");
+    String productDetail = newItemInputForm("Product Detail");
     double price;
     do {
       String priceString = newItemInputForm("Price");
@@ -61,7 +62,7 @@ public class ProductManager {
     } while(true);
 
     int productId = getNextId();
-    return new Product(productId, productName, price);
+    return new Product(productId, productName, productDetail, price);
   }
 
   public void addNewItem(Product newItem){
@@ -76,6 +77,7 @@ public class ProductManager {
     view.printText("::::: Update Product ::::: \n");
     view.printText("-- Enter to skip edit --  \n");
     String productName = updateItemInputForm(selectedItem.getProductName(),"Product Name");
+    String productDetail = updateItemInputForm(selectedItem.getProductName(),"Product Name");
 
     double price;
     do {
@@ -89,7 +91,7 @@ public class ProductManager {
 
     } while(true);
 
-    return new Product(selectedItem.getProductId(), productName, price);
+    return new Product(selectedItem.getProductId(), productName, productDetail, price);
 
   }
 
@@ -155,14 +157,6 @@ public class ProductManager {
     }
     maxProductId++;
     return maxProductId;
-  }
-
-  private int searchByItemIndex(int itemIndex){
-    //search start from 0 ... n
-    if (itemIndex < 0 || itemIndex > (shopManager.products.size())) {
-      return -1;
-    }
-    return itemIndex;
   }
 
   public int searchByInputNumber(String inputNumber){

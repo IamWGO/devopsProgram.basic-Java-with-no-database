@@ -13,10 +13,10 @@ public class AuthManager {
   int maxTry = 3;
   int nextTryInSecond = 10;
 
-  ShopManager mainObject;
-  public AuthManager(ShopManager mainObject) {
-    this.mainObject = mainObject;
-    view = new DefaultView(mainObject);
+  ShopManager shopManager;
+  public AuthManager(ShopManager shopManager) {
+    this.shopManager = shopManager;
+    view = new DefaultView(shopManager);
   }
 
   public void doLogin(){
@@ -50,7 +50,7 @@ public class AuthManager {
 
       //check if correct
       boolean isSuccess;
-      if (mainObject.getIsAdmin()) {
+      if (shopManager.getIsAdmin()) {
         isSuccess = isAdminLoginSuccess(username, password);
       } else {
         isSuccess = isCustomerLoginSuccess(username,password);
@@ -72,29 +72,29 @@ public class AuthManager {
   }
 
   public void setLogin() {
-    if (mainObject.getIsAdmin()) {
-      mainObject.setAdminLogin(true);
+    if (shopManager.getIsAdmin()) {
+      shopManager.setAdminLogin(true);
     } else {
-      mainObject.setCustomerLogin(true);
+      shopManager.setCustomerLogin(true);
     }
   }
 
   public void setLogout(){
-    if (mainObject.getIsAdmin()) {
-      mainObject.setAdminLogin(false);
+    if (shopManager.getIsAdmin()) {
+      shopManager.setAdminLogin(false);
     } else {
-      mainObject.setLoginCustomerId(0);
-      mainObject.setCustomerLogin(false);
+      shopManager.setLoginCustomerId(0);
+      shopManager.setCustomerLogin(false);
     }
 
-    mainObject.setIsAdmin(false);
+    shopManager.setIsAdmin(false);
   }
 
   private boolean isCustomerLoginSuccess(String username, String password){
 
-    for (Customer customer : mainObject.customers) {
+    for (Customer customer : shopManager.customers) {
       if (customer.getUsername().equals(username) && customer.getPassword().equals(password)) {
-        mainObject.setLoginCustomerId(customer.getCustomerId());
+        shopManager.setLoginCustomerId(customer.getCustomerId());
         return true;
       }
     }
@@ -102,7 +102,7 @@ public class AuthManager {
   }
 
   private boolean isAdminLoginSuccess(String username, String password){
-    for (Admin admin : mainObject.admins) {
+    for (Admin admin : shopManager.admins) {
       if (admin.getUsername().equals(username) && admin.getPassword().equals(password))
         return true;
     }

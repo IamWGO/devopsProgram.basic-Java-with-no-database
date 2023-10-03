@@ -166,10 +166,11 @@ public class FileService {
     try {
       int productId = FormatService.stringToInt(parts[0]);
       String productName = parts[1];
-      double price = FormatService.StringToDouble(parts[2]);
-      boolean isSoldOut =  parts[3].equals("1");
-      boolean isActive =  parts[4].equals("1");
-      Product newItem = new Product(productId, productName, price, isSoldOut, isActive);
+      String productDetail = parts[2];
+      double price = FormatService.StringToDouble(parts[3]);
+      boolean isSoldOut =  parts[4].equals("1");
+      boolean isActive =  parts[5].equals("1");
+      Product newItem = new Product(productId, productName,productDetail, price, isSoldOut, isActive);
       mainObject.addNewProduct(newItem);
     } catch (ArrayIndexOutOfBoundsException ex) {
       //System.out.println("Empty line in" + filename);

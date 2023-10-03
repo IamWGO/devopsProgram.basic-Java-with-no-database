@@ -7,23 +7,21 @@ import manager.ShopManager;
 import utility.stats.MainState;
 import utility.stats.OperationState;
 import utility.view.CustomerView;
-
-import java.util.ArrayList;
 import java.util.Scanner;
 
 public class CustomerController {
   Scanner scan = new Scanner(System.in);
   CustomerView view = new CustomerView();
 
-  ShopManager mainObject;
+  ShopManager shopManager;
   CustomerManager customerManager;
-  public CustomerController(ShopManager mainObject) {
-    this.mainObject = mainObject;
-    this.customerManager = new CustomerManager(mainObject);
+  public CustomerController(ShopManager shopManager) {
+    this.shopManager = shopManager;
+    this.customerManager = new CustomerManager(shopManager);
   }
 
   public void menu() {
-    if (!mainObject.isHasAdminPermission()) return;
+    if (!shopManager.isHasAdminPermission()) return;
 
     boolean run = true;
     while (run) {
@@ -46,9 +44,9 @@ public class CustomerController {
   }
 
   private void listAll() {
-    if (!mainObject.isHasAdminPermission()) return;
+    if (!shopManager.isHasAdminPermission()) return;
 
-    if (mainObject.customers.isEmpty()) {
+    if (shopManager.customers.isEmpty()) {
       view.printHeadLine();
       view.printNotFound();
       return;
@@ -58,9 +56,9 @@ public class CustomerController {
   }
 
   private void search() {
-    if (!mainObject.isHasAdminPermission()) return;
+    if (!shopManager.isHasAdminPermission()) return;
 
-    if (mainObject.customers.isEmpty()) {
+    if (shopManager.customers.isEmpty()) {
       view.printEmptyItem();
       return;
     }
@@ -80,7 +78,7 @@ public class CustomerController {
   }
 
   private void viewCustomerOrder(){
-    if (!mainObject.isHasAdminPermission()) return;
+    if (!shopManager.isHasAdminPermission()) return;
 
     while (true) {
       customerManager.showCustomerList();
@@ -92,21 +90,23 @@ public class CustomerController {
 
       if (inputString.equalsIgnoreCase("q")) break;
 
+      // get customer
       int itemIndex = customerManager.searchByInputNumber(inputString);
-      Customer selectedItem = mainObject.customers.get(itemIndex);
-
-      OrderManager orderManager = new OrderManager(mainObject);
+      Customer selectedItem = shopManager.customers.get(itemIndex);
+      // show Order
+      OrderManager orderManager = new OrderManager(shopManager);
       orderManager.orderHistory(selectedItem.getCustomerId());
     }
   }
 
-
   public void register(){
     //set mainState to get filename
-    mainObject.mainState = MainState.CUSTOMER;
+    shopManager.mainState = MainState.CUSTOMER;
+    // show form input
     Customer newItem = customerManager.newItemForm();
 
-    view.printText("\n Confirm to update? (y/n)  : ");
+    //Confirm
+    view.printText("\n Confirm to register? (y/n)  : ");
     String inputString = scan.nextLine();
 
     if (!inputString.equalsIgnoreCase("y")) {
@@ -117,44 +117,19 @@ public class CustomerController {
     // add new Item
     customerManager.addNewItem(newItem);
     // Set customer
-    mainObject.loginForNewCustomer(newItem.getCustomerId());
+    shopManager.loginForNewCustomer(newItem.getCustomerId());
   }
-
-  private void updateForm(int indexItem){
-    if (!mainObject.isHasBothPermission()) return;
-
-    Customer selectedItem = mainObject.customers.get(indexItem);
-    Customer updateItem = customerManager.updateProfile(selectedItem);
-
-    view.printText("\n Confirm to update? (y/n)  : ");
-    String inputString = scan.nextLine();
-
-    if (!inputString.equalsIgnoreCase("y")) {
-      view.printCancel();
-      return;
-    }
-
-    // Update Customer
-    customerManager.updateItem(selectedItem, updateItem);
-
-  }
-
-  //++ Backend ++ ------------------------------------------------------------------------------
-
-
-
 
   private void updateStatus(){
-    if (!mainObject.isHasAdminPermission()) return;
+    if (!shopManager.isHasAdminPermission()) return;
 
-    if (mainObject.customers.isEmpty()) {
+    if (shopManager.customers.isEmpty()) {
       view.printEmptyItem();
       return;
     }
 
     while (true) {
       customerManager.showCustomerList();
-
       view.printCustomerMenu(OperationState.UPDATE_STATUS);
       // select menu
       String inputString = scan.nextLine();
@@ -162,6 +137,7 @@ public class CustomerController {
 
       if (inputString.equalsIgnoreCase("q")) break;
       int itemIndex = customerManager.searchByInputNumber(inputString);
+
       // update customer
       customerManager.updateStatus(itemIndex);
 
@@ -169,9 +145,9 @@ public class CustomerController {
   }
 
   private void delete() {
-    if (!mainObject.isHasAdminPermission()) return;
+    if (!shopManager.isHasAdminPermission()) return;
 
-    if (mainObject.customers.isEmpty()) {
+    if (shopManager.customers.isEmpty()) {
       view.printEmptyItem();
       return;
     }
@@ -193,7 +169,7 @@ public class CustomerController {
   }
 
   public void viewProfileByCustomerId(int customerId) {
-    if (!mainObject.isHasBothPermission()) return;
+    if (!shopManager.isHasBothPermission()) return;
 
     int itemIndex = customerManager.getCustomerIndexItemById(customerId);
 
@@ -206,7 +182,7 @@ public class CustomerController {
   }
 
   private void viewProfileByItemIndex(int searchIndex){
-    if (!mainObject.isHasBothPermission()) return;
+    if (!shopManager.isHasBothPermission()) return;
 
     int itemIndex = customerManager.searchByItemIndex(searchIndex);
 
@@ -219,10 +195,10 @@ public class CustomerController {
   }
 
   private void showProfile(int itemIndex){
-    if (!mainObject.isHasBothPermission()) return;
+    if (!shopManager.isHasBothPermission()) return;
 
-    view.printDetail(mainObject.customers.get(itemIndex));
-    view.printText("\n Confirm Order? (y/n)  : ");
+    view.printDetail(shopManager.customers.get(itemIndex));
+    view.printText("\n Do you want to update? (y/n)  : ");
 
     String inputString = scan.nextLine();
     if (!inputString.equalsIgnoreCase("y")) {
@@ -231,5 +207,23 @@ public class CustomerController {
     }
 
     updateForm(itemIndex);
+  }
+
+  private void updateForm(int indexItem){
+    if (!shopManager.isHasBothPermission()) return;
+
+    Customer selectedItem = shopManager.customers.get(indexItem);
+    Customer updateItem = customerManager.updateProfile(selectedItem);
+
+    view.printText("\n Confirm to update? (y/n)  : ");
+    String inputString = scan.nextLine();
+
+    if (!inputString.equalsIgnoreCase("y")) {
+      view.printCancel();
+      return;
+    }
+
+    // Update Customer
+    customerManager.updateItem(selectedItem, updateItem);
   }
 }

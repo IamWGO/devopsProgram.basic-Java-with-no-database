@@ -1,5 +1,6 @@
 package controllers;
 
+
 import dataclass.Product;
 import manager.OrderManager;
 import manager.ProductManager;
@@ -15,16 +16,17 @@ public class ProductController {
   ProductView view = new ProductView();
 
   OrderManager orderManager;
+  ShopManager shopManager;
   ProductManager productManager;
-  ShopManager mainObject;
-  public ProductController(ShopManager mainObject) {
-    this.mainObject = mainObject;
-    orderManager = new OrderManager(mainObject);
-    productManager = new ProductManager(mainObject);
+
+  public ProductController(ShopManager shopManager) {
+    this.shopManager = shopManager;
+    orderManager = new OrderManager(shopManager);
+    productManager = new ProductManager(shopManager);
   }
 
   public void menu() {
-    if (!mainObject.isHasAdminPermission()) return;
+    if (!shopManager.isHasAdminPermission()) return;
 
     boolean run = true;
     while (run) {
@@ -50,7 +52,7 @@ public class ProductController {
 
     boolean run = true;
     while (run) {
-      view.printSelectToCartMenu(mainObject.tempOrderItems);
+      view.printSelectToCartMenu(shopManager.tempOrderItems);
       // select menu
       String choice = scan.nextLine();
 
@@ -60,11 +62,11 @@ public class ProductController {
         case "2" -> addProductToCart();
         case "3" -> viewCart();
         case "4" -> {
-          if (mainObject.tempOrderItems.isEmpty()) view.printMenuWarning();
+          if (shopManager.tempOrderItems.isEmpty()) view.printMenuWarning();
           else  deleteOrderItem();
         }
         case "5" -> {
-          if (mainObject.tempOrderItems.isEmpty()) view.printMenuWarning();
+          if (shopManager.tempOrderItems.isEmpty()) view.printMenuWarning();
           else  orderManager.confirmOrder();
         }
         case "Q" ->  run = false;
@@ -75,7 +77,7 @@ public class ProductController {
 
   private void listAll() {
     view.printHeadLine();
-    if (mainObject.products.isEmpty()) {
+    if (shopManager.products.isEmpty()) {
       view.printNotFound();
       return;
     }
@@ -83,9 +85,9 @@ public class ProductController {
   }
 
   private void newItem() {
-    if (!mainObject.isHasAdminPermission()) return;
+    if (!shopManager.isHasAdminPermission()) return;
     //set mainState to get filename
-    mainObject.mainState = MainState.PRODUCT;
+    shopManager.mainState = MainState.PRODUCT;
     //Add new item
     Product newItem = productManager.newItemForm();
 
@@ -103,7 +105,7 @@ public class ProductController {
   }
 
   private void update() {
-    if (!mainObject.isHasAdminPermission()) return;
+    if (!shopManager.isHasAdminPermission()) return;
 
     while (true) {
       listAll();
@@ -122,7 +124,7 @@ public class ProductController {
         return;
       }
 
-      Product selectedItem = mainObject.products.get(itemIndex);
+      Product selectedItem = shopManager.products.get(itemIndex);
       Product updateItem = productManager.updateItemForm(selectedItem);
 
       // Confirm Update
@@ -164,7 +166,7 @@ public class ProductController {
 
   private void viewCart() {
     // List selected product items (order items)
-    orderManager.listOrderItems(mainObject.tempOrderItems);
+    orderManager.listOrderItems(shopManager.tempOrderItems);
   }
   private void deleteOrderItem() {
 
@@ -181,7 +183,7 @@ public class ProductController {
       try {
         int choice = Integer.parseInt(inputString);
         // if choice is not in range then return -1
-        if (choice > 0 || choice < (mainObject.tempOrderItems.size())) {
+        if (choice > 0 || choice < (shopManager.tempOrderItems.size())) {
           itemIndex = choice-1;
         }
       } catch (NumberFormatException ex) {
@@ -202,14 +204,14 @@ public class ProductController {
 
   //TODO : Product delete for backend
   private void delete() {
-    if (!mainObject.isHasAdminPermission()) return;
+    if (!shopManager.isHasAdminPermission()) return;
 
-    if (mainObject.products.isEmpty()) {
+    if (shopManager.products.isEmpty()) {
       view.printEmptyItem();
       return;
     }
 
-    if (!mainObject.isHasAdminPermission()) return;
+    if (!shopManager.isHasAdminPermission()) return;
 
     while (true) {
       listAll();
@@ -228,7 +230,7 @@ public class ProductController {
         return;
       }
 
-      Product selectedItem = mainObject.products.get(itemIndex);
+      Product selectedItem = shopManager.products.get(itemIndex);
 
       // Confirm Update
       view.printText("\n Confirm to update? (y/n)  : ");
