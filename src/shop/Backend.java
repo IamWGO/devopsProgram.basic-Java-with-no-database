@@ -1,10 +1,11 @@
 package shop;
 
-import controllers.AuthController;
+
 import controllers.CustomerController;
-import controllers.MainController;
 import controllers.OrderController;
 import controllers.ProductController;
+import manager.AuthManager;
+import manager.ShopManager;
 import utility.view.DefaultView;
 
 import java.util.Scanner;
@@ -13,9 +14,9 @@ public class Backend {
   Scanner scan = new Scanner(System.in);
   DefaultView view;
 
-  MainController mainObject;
-  AuthController auth;
-  public Backend(MainController mainObject, AuthController auth) {
+  ShopManager mainObject;
+  AuthManager auth;
+  public Backend(ShopManager mainObject, AuthManager auth) {
     this.mainObject = mainObject;
     this.auth = auth;
 

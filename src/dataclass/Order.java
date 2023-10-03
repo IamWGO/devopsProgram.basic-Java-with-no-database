@@ -1,6 +1,6 @@
 package dataclass;
 
-import manager.FormatManager;
+import service.FormatService;
 
 import java.time.LocalDateTime;
 
@@ -56,11 +56,11 @@ public class Order {
   }
 
   public String getOrderDate() {
-    return FormatManager.localDateToString(orderDate);
+    return FormatService.localDateToString(orderDate);
   }
 
   public String getCompleteDate(){
-    return FormatManager.localDateToString(completeDate);
+    return FormatService.localDateToString(completeDate);
   }
 
   public String getRemark() {
@@ -83,8 +83,8 @@ public class Order {
   public String objectToLineFormat(){
     return  orderId + "," + customerId + ","
             + (!remark.isEmpty() ? remark : "-") + "," + (isPending ? "1" : "0")+ ","
-            + FormatManager.localDateToString(orderDate) + ","
-            + FormatManager.localDateToString(completeDate)
+            + FormatService.localDateToString(orderDate) + ","
+            + FormatService.localDateToString(completeDate)
             ;
   }
 

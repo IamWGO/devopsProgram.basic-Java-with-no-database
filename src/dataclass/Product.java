@@ -25,6 +25,14 @@ public class Product {
     this.isActive = isActive;
   }
 
+  public void updateItem(Product updateItem) {
+    this.productId = updateItem.productId;
+    this.productName = updateItem.productName;
+    this.price = updateItem.price;
+    this.isSoldOut = updateItem.isSoldOut;
+    this.isActive = updateItem.isActive;
+  }
+
   public int getProductId() {
     return productId;
   }

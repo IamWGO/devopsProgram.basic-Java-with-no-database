@@ -1,6 +1,9 @@
 package shop;
 
 import controllers.*;
+import manager.AuthManager;
+import manager.OrderManager;
+import manager.ShopManager;
 import utility.view.DefaultView;
 
 import java.util.Scanner;
@@ -9,9 +12,9 @@ public class Frontend {
   Scanner scan = new Scanner(System.in);
   DefaultView view;
 
-  MainController mainObject;
-  AuthController authObject;
-  public Frontend(MainController mainObject, AuthController auth) {
+  ShopManager mainObject;
+  AuthManager authObject;
+  public Frontend(ShopManager mainObject, AuthManager auth) {
     this.mainObject = mainObject;
     this.authObject = auth;
 
@@ -80,8 +83,8 @@ public class Frontend {
 
   private void getOrderHistory(){
     if (mainObject.getIsCustomerLogin()) {
-      OrderController order = new OrderController(mainObject);
-      order.orderHistory(mainObject.getLoginCustomerId());
+      OrderManager orderManager = new OrderManager(mainObject);
+      orderManager.orderHistory(mainObject.getLoginCustomerId());
     } else {
       authenticationMenu();
     }

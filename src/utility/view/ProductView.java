@@ -43,10 +43,9 @@ public class ProductView {
             
             ::::::::::::::::::: PRODUCT MENU :::::::::::::::::::
             1. All Products
-            2. Search
-            3. New Product
-            4. Edit Product
-            5. Delete
+            2. New Product
+            3. Edit Product
+            4. Delete
             Q. Go back
             :::::::::::::::::::::::::::::::::::::::::::::::::::::::""");
 

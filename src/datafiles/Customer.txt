@@ -1,2 +1,2 @@
-1,waleerat,Gottlieb,customer1,customer1,waleerat@gmail.com,-,-,-,0
+1,lee,Gottlieb,customer1,customer1,waleerat@gmail.com,-,-,-,0
 2,waleerat,Gottlieb,customer2,customer2,waleerat@gmail.com,-,-,-,1

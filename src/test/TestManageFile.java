@@ -1,8 +1,8 @@
 package test;
 
-import controllers.MainController;
+import service.FileService;
 import dataclass.*;
-import manager.FileManager;
+import manager.ShopManager;
 import utility.stats.FileState;
 import utility.stats.MainState;
 
@@ -15,7 +15,7 @@ public class TestManageFile {
   MainState mainState = MainState.ORDER_ITEM;
   FileState fileState = FileState.READ;
 
-  FileManager fileManager = new FileManager(new MainController(), mainState,fileState);
+  FileService fileService = new FileService(new ShopManager(), mainState,fileState);
 
   ArrayList<Admin> admins = new ArrayList<>();
   ArrayList<Customer> customers = new ArrayList<>();
@@ -81,7 +81,7 @@ public class TestManageFile {
 
   private void read(){
     fileState = FileState.READ;
-    fileManager.choose();
+    fileService.choose();
   }
   private void write(){
     fileState = FileState.NEW_LINE;
@@ -89,28 +89,28 @@ public class TestManageFile {
       case ADMIN -> {
         Admin newItem = new Admin("newadmin", "1234567");
         writeToFileText = newItem.objectToLineFormat();
-        fileManager.choose();
+        fileService.choose();
       }
       case PRODUCT -> {
         Product newItem = new Product(1, "Product 1", 100);
         writeToFileText = newItem.objectToLineFormat();
-        fileManager.choose();
+        fileService.choose();
       }
       case CUSTOMER -> {
         Customer newItem = new Customer(2,"waleerat","Gottlieb","customer",
                 "1234567","waleerat@gmail.com","","","",false);
         writeToFileText = newItem.objectToLineFormat();
-        fileManager.choose();
+        fileService.choose();
       }
       case ORDER -> {
         Order newItem = new Order(1,3,"Remark1", true);
         writeToFileText = newItem.objectToLineFormat();
-        fileManager.choose();
+        fileService.choose();
       }
       case ORDER_ITEM -> {
         OrderItem newItem = new OrderItem(2,1,1,12,233,200);
         writeToFileText = newItem.objectToLineFormat();
-        fileManager.choose();
+        fileService.choose();
       }
 
     }
@@ -132,7 +132,7 @@ public class TestManageFile {
           writeToFileText = writeToFileText.concat(dummyItems.get(i).objectToLineFormat());
           if (i < dummyItems.size()-1) writeToFileText = writeToFileText.concat("\n");
         }
-        fileManager.choose();
+        fileService.choose();
       }
       case CUSTOMER -> {
         ArrayList<Customer> dummyItems = new ArrayList<>();
@@ -148,7 +148,7 @@ public class TestManageFile {
           writeToFileText = writeToFileText.concat(dummyItems.get(i).objectToLineFormat());
           if (i < dummyItems.size()-1) writeToFileText = writeToFileText.concat("\n");
         }
-        fileManager.choose();
+        fileService.choose();
       }
       case ORDER -> {
         ArrayList<Order> dummyItems = new ArrayList<>();
@@ -161,7 +161,7 @@ public class TestManageFile {
           writeToFileText = writeToFileText.concat(dummyItems.get(i).objectToLineFormat());
           if (i < dummyItems.size()-1) writeToFileText = writeToFileText.concat("\n");
         }
-        fileManager.choose();
+        fileService.choose();
       }
       case ORDER_ITEM -> {
         ArrayList<OrderItem> dummyItems = new ArrayList<>();
@@ -173,7 +173,7 @@ public class TestManageFile {
           writeToFileText = writeToFileText.concat(dummyItems.get(i).objectToLineFormat());
           if (i < dummyItems.size()-1) writeToFileText = writeToFileText.concat("\n");
         }
-        fileManager.choose();
+        fileService.choose();
       }
     }
 

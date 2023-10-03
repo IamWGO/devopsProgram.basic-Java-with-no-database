@@ -1,14 +1,15 @@
 package utility.view;
 
-import controllers.MainController;
+
+import manager.ShopManager;
 import utility.Theme;
 import utility.colors.DefaultColor;
 
 public class DefaultView {
   Theme printOut = new Theme(new DefaultColor());
-  MainController mainObject;
+  ShopManager mainObject;
 
-  public DefaultView(MainController mainObject) {
+  public DefaultView(ShopManager mainObject) {
     this.mainObject = mainObject;
   }
 
