@@ -23,7 +23,8 @@
 
 **EXTRA - SEARCH FUNCTION**
 
-    Add a search function where customers can search for products based on name, category, and possibly price. This function is optional and should be considered an extra challenge.
+    Add a search function where customers can search for products based on name, category, 
+    and possibly price. This function is optional and should be considered an extra challenge.
 
 **Scope**
 
