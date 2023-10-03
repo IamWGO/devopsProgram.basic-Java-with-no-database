@@ -4,6 +4,7 @@ package utility.view;
 import manager.ShopManager;
 import utility.Theme;
 import utility.colors.DefaultColor;
+import utility.stats.OperationState;
 
 public class DefaultView {
   Theme printOut = new Theme(new DefaultColor());
@@ -106,5 +107,20 @@ public class DefaultView {
 
   public void printFrontendMenuWarning() {
     printOut.println("Input a number or Q to exit program");
+  }
+
+  public void printViewOrderMenu() {
+    printOut.printInfo(
+            """
+                    :::::::::::::::::: SEARCH ORDER :::::::::::::::::::
+                    - Input a list number to search order
+                    - Input Q to go back
+                    :::::::::::::::::::::::::::::::::::::::::::::::::::::::"""
+    );
+    printOut.print("Input list Number: ");
+  }
+
+  public void printNotFound(){
+    printOut.printInfo("No items found.");
   }
 }

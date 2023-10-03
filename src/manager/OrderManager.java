@@ -14,8 +14,10 @@ public class OrderManager {
   Scanner scan = new Scanner(System.in);
   OrderView view = new OrderView();
   ShopManager shopManager;
+  AuthManager authManager;
   public OrderManager(ShopManager shopManager) {
     this.shopManager = shopManager;
+    this.authManager = new AuthManager(shopManager);
   }
 
   // ++ Order ++ ------------------------------------------------------------------------------
@@ -27,7 +29,10 @@ public class OrderManager {
   }
 
   public void confirmOrder() {
-    if (!shopManager.isHasCustomerPermission()) return;
+    if (!shopManager.isHasCustomerPermission()) {
+      authManager.doLogin();
+      return;
+    }
 
     view.printText("\n Du you want to update profile? (y/n)  : ");
 
@@ -54,6 +59,9 @@ public class OrderManager {
       //- add new line to OrderItem.text.
       addOrderItem(shopManager.tempOrderItems.get(i));
     }
+
+    // clear temp order
+    shopManager.tempOrderItems = new ArrayList<>();
     // Print order confirmed
     view.printOrderConfirmed();
   }

@@ -2,9 +2,10 @@
 2,ALPHA! Blueberry,Jackfruit,12.0,0,1
 3,TURBO! Apple/Guava,Extra taurine for extra speed,12.0,0,1
 4,Relax! Greentea/Lemon,For late nights,12.0,0,1
-5,SUPERMAN! Strawberry,Blueberries,0.0,0,0
+5,SUPERMAN! Strawberry,Blueberries,When flying isnt enough,12.0,0,1
 6,Giggly! Apple,18+ of age (fizzed with Nitrous oxide),12.0,0,1
 7,Boost! Tropical,Bring sun to you,12.0,0,1
-8,Gold! Tastes like 1M$,Only for Premium members,0.0,0,0
+8,Gold! Tastes like 1M$,Only for Premium members, contains aeatable 24k Goldleaf,12.0,0,1
 9,Platinum! Guess the taste,Only for premium members,12.0,0,1
-10,Focus! Blackcurrant,Lions mane,0.0,0,0
+10,Focus! Blackcurrant,Lions mane,When Einstein focus needed.,12.0,0,1
+11,Jungle! Mint/Lime/ Coconut,12.0,0,1

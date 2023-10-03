@@ -4,6 +4,7 @@ import controllers.*;
 import manager.AuthManager;
 import manager.OrderManager;
 import manager.ShopManager;
+import utility.stats.OperationState;
 import utility.view.DefaultView;
 
 import java.util.Scanner;
@@ -12,13 +13,13 @@ public class Frontend {
   Scanner scan = new Scanner(System.in);
   DefaultView view;
 
-  ShopManager mainObject;
+  ShopManager shopManager;
   AuthManager authObject;
-  public Frontend(ShopManager mainObject, AuthManager auth) {
-    this.mainObject = mainObject;
+  public Frontend(ShopManager shopManager, AuthManager auth) {
+    this.shopManager = shopManager;
     this.authObject = auth;
 
-    view = new DefaultView(mainObject);
+    view = new DefaultView(shopManager);
   }
 
   public void menu(){
@@ -34,11 +35,11 @@ public class Frontend {
         case "2" -> getOrderHistory();
         case "3" -> {
           // check text in printFrontendMenu()
-          if (!mainObject.getIsCustomerLogin()) {
+          if (!shopManager.getIsCustomerLogin()) {
             authObject.customerLogin();
           } else {
-            CustomerController customerObject = new CustomerController(mainObject);
-            customerObject.viewProfileByCustomerId(mainObject.getLoginCustomerId());
+            CustomerController customerObject = new CustomerController(shopManager);
+            customerObject.viewProfileByCustomerId(shopManager.getLoginCustomerId());
           }
         }
         case "4" -> authObject.setLogout();
@@ -63,7 +64,7 @@ public class Frontend {
           authObject.customerLogin();
         }
         case "2" -> {
-          CustomerController customer = new CustomerController(mainObject);
+          CustomerController customer = new CustomerController(shopManager);
           customer.register();
         }
         case "Q" ->  run = false;
@@ -71,23 +72,41 @@ public class Frontend {
       }
 
       // exit loop if login success
-      if (mainObject.getIsCustomerLogin()) run = false;
+      if (shopManager.getIsCustomerLogin()) run = false;
 
     }
   }
 
   private void viewProduct(){
-    ProductController productObject = new ProductController(mainObject);
+    ProductController productObject = new ProductController(shopManager);
     productObject.frontendProductList();
   }
 
   private void getOrderHistory(){
-    if (mainObject.getIsCustomerLogin()) {
-      OrderManager orderManager = new OrderManager(mainObject);
-      orderManager.orderHistory(mainObject.getLoginCustomerId());
-    } else {
-      authenticationMenu();
+    if (!shopManager.isHasCustomerPermission()) {
+      authObject.doLogin();
+      return;
     }
+    OrderManager orderManager = new OrderManager(shopManager);
+
+    while (true) {
+      orderManager.orderHistory(shopManager.getLoginCustomerId());
+
+      view.printViewOrderMenu();
+      // select menu
+      String inputString = scan.nextLine();
+      view.printEmptyLine();
+
+      if (inputString.equalsIgnoreCase("q")) break;
+      int itemIndex = orderManager.searchByInputNumber(inputString);
+
+      if (itemIndex == -1) {
+        view.printNotFound();
+        return;
+      }
+      orderManager.getOrderDetail(itemIndex);
+    }
+
   }
 
 }
