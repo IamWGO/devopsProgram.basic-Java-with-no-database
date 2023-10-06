@@ -2,21 +2,20 @@ package manager;
 
 import dataclass.Admin;
 import dataclass.Customer;
-import utility.view.DefaultView;
+import view.CustomerView;
 
 import java.util.Scanner;
 
 public class AuthManager {
   Scanner scan = new Scanner(System.in);
-  DefaultView view;
-
+  CustomerView outPut = new CustomerView();
   int maxTry = 3;
-  int nextTryInSecond = 10;
-
   ShopManager shopManager;
+  CustomerManager customerManager;
+
   public AuthManager(ShopManager shopManager) {
     this.shopManager = shopManager;
-    view = new DefaultView(shopManager);
+    this.customerManager = new CustomerManager(shopManager);
   }
 
   public void doLogin(){
@@ -25,27 +24,23 @@ public class AuthManager {
     String password;
 
     while (true) {
-      // Print header
-      if (countTry == 0) {
-        view.printHeaderMenu();
-      }
-
       // check max try
       if (maxTry == countTry) {
-        view.printMaxTryInfo(maxTry, nextTryInSecond);
+        countTry = 0;
 
+        outPut.println("\nYou have tried " + maxTry + " times.");
+        outPut.println("Q : Go back to main or enter to try again.");
         String inputChoice = scan.nextLine();
 
         if (inputChoice.equalsIgnoreCase("Q")) break;
-        delay();
-        countTry = 0;
       }
 
+      this.getHeader();
       // input username/password
-      view.printText("Username: ");
+      outPut.print("Username: ");
       username = scan.nextLine();
 
-      view.printText("Password: ");
+      outPut.print("Password: ");
       password = scan.nextLine();
 
       //check if correct
@@ -61,17 +56,29 @@ public class AuthManager {
         break;
       } else {
         countTry++;
-        view.printWrongPassword(maxTry,countTry);
+        outPut.println(" Wrong username or password !!! you have "
+                +(maxTry - countTry) + " left.");
       }
 
     }
   }
 
-  public void customerLogin(){
-    doLogin();
+  private void getHeader(){
+    if (shopManager.getIsAdmin()) {
+      outPut.println("\n::::: LOGIN TO BACKEND :::: ");
+    }
+    else {
+      if (!shopManager.getTempOrderItems().isEmpty()) {
+        outPut.println("\n::::: LOGIN TO CONFIRM ORDER :::: ");
+      } else {
+        outPut.println("\n::::: LOGIN TO FRONTEND :::: ");
+      }
+    }
   }
 
   public void setLogin() {
+    System.out.println("+++ Set Login ++");
+
     if (shopManager.getIsAdmin()) {
       shopManager.setAdminLogin(true);
     } else {
@@ -110,11 +117,28 @@ public class AuthManager {
   }
 
 
-  private void delay(){
-    try {
-      Thread.sleep(nextTryInSecond * 1000L); // Convert seconds to milliseconds
-    } catch (InterruptedException e) {
-      // Handle the exception if necessary
+  public void authenticationMenu(){
+    boolean run = true;
+    while (run) {
+      outPut.printRegisterOrLoginMenu();
+      // select menu
+      String choice = scan.nextLine();
+
+      // toUpperCase to check Q command
+      switch (choice.toUpperCase()) {
+        case "1" -> {
+          doLogin();
+        }
+        case "2" -> {
+          customerManager.register();
+        }
+        case "Q" ->  run = false;
+        default -> outPut.printMenuWarning();
+      }
+
+      // exit loop if login success
+      if (shopManager.getIsCustomerLogin()) run = false;
+
     }
   }
 

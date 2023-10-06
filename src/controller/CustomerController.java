@@ -1,4 +1,4 @@
-package controllers;
+package controller;
 
 import dataclass.Customer;
 import manager.CustomerManager;
@@ -6,18 +6,19 @@ import manager.OrderManager;
 import manager.ShopManager;
 import utility.stats.MainState;
 import utility.stats.OperationState;
-import utility.view.CustomerView;
+import view.CustomerView;
+
 import java.util.Scanner;
 
 public class CustomerController {
   Scanner scan = new Scanner(System.in);
-  CustomerView view = new CustomerView();
-
+  CustomerView outPut = new CustomerView();
   ShopManager shopManager;
   CustomerManager customerManager;
+
   public CustomerController(ShopManager shopManager) {
     this.shopManager = shopManager;
-    this.customerManager = new CustomerManager(shopManager);
+    customerManager = new CustomerManager(shopManager);
   }
 
   public void menu() {
@@ -25,10 +26,10 @@ public class CustomerController {
 
     boolean run = true;
     while (run) {
-      view.printBackendMenu();
+      outPut.printBackendMenu();
       // select menu
       String inputString = scan.nextLine();
-      view.printEmptyLine();
+      outPut.printEmptyLine();
 
       // toUpperCase to check Q command
       switch (inputString.toUpperCase()) {
@@ -38,7 +39,7 @@ public class CustomerController {
         case "4" -> updateStatus();
         case "5" -> delete();
         case "Q" -> run = false; // quit while loop
-        default -> view.printMenuWarning();
+        default -> outPut.printMenuWarning();
       }
     }
   }
@@ -47,8 +48,8 @@ public class CustomerController {
     if (!shopManager.isHasAdminPermission()) return;
 
     if (shopManager.customers.isEmpty()) {
-      view.printHeadLine();
-      view.printNotFound();
+      outPut.printHeadLine();
+      outPut.printNotFound();
       return;
     }
 
@@ -59,17 +60,17 @@ public class CustomerController {
     if (!shopManager.isHasAdminPermission()) return;
 
     if (shopManager.customers.isEmpty()) {
-      view.printEmptyItem();
+      outPut.printEmptyItem();
       return;
     }
 
     while (true) {
       customerManager.showCustomerList();
 
-      view.printCustomerMenu(OperationState.SEARCH);
+      outPut.println("printCustomerMenu ::::");
       // select menu
       String inputString = scan.nextLine();
-      view.printEmptyLine();
+      outPut.printEmptyLine();
 
       if (inputString.equalsIgnoreCase("q")) break;
       int itemIndex = customerManager.searchByInputNumber(inputString);
@@ -77,16 +78,30 @@ public class CustomerController {
     }
   }
 
+  private void viewProfileByItemIndex(int searchIndex){
+    if (!shopManager.isHasBothPermission()) return;
+
+    int itemIndex = customerManager.searchByItemIndex(searchIndex);
+
+    if (itemIndex == -1){
+      outPut.printNotFound();
+      return;
+    }
+    // View Profile
+    customerManager.showProfile(itemIndex);
+  }
+
+
   private void viewCustomerOrder(){
     if (!shopManager.isHasAdminPermission()) return;
 
     while (true) {
       customerManager.showCustomerList();
 
-      view.printCustomerMenu(OperationState.VIEW_ORDER);
+      outPut.printCustomerMenu(OperationState.VIEW_ORDER);
       // select menu
       String inputString = scan.nextLine();
-      view.printEmptyLine();
+      outPut.printEmptyLine();
 
       if (inputString.equalsIgnoreCase("q")) break;
 
@@ -99,41 +114,20 @@ public class CustomerController {
     }
   }
 
-  public void register(){
-    //set mainState to get filename
-    shopManager.mainState = MainState.CUSTOMER;
-    // show form input
-    Customer newItem = customerManager.newItemForm();
-
-    //Confirm
-    view.printText("\n Confirm to register? (y/n)  : ");
-    String inputString = scan.nextLine();
-
-    if (!inputString.equalsIgnoreCase("y")) {
-      view.printCancel();
-      return;
-    }
-
-    // add new Item
-    customerManager.addNewItem(newItem);
-    // Set customer
-    shopManager.loginForNewCustomer(newItem.getCustomerId());
-  }
-
   private void updateStatus(){
     if (!shopManager.isHasAdminPermission()) return;
 
     if (shopManager.customers.isEmpty()) {
-      view.printEmptyItem();
+      outPut.printEmptyItem();
       return;
     }
 
     while (true) {
       customerManager.showCustomerList();
-      view.printCustomerMenu(OperationState.UPDATE_STATUS);
+      outPut.printCustomerMenu(OperationState.UPDATE_STATUS);
       // select menu
       String inputString = scan.nextLine();
-      view.printEmptyLine();
+      outPut.printEmptyLine();
 
       if (inputString.equalsIgnoreCase("q")) break;
       int itemIndex = customerManager.searchByInputNumber(inputString);
@@ -148,17 +142,17 @@ public class CustomerController {
     if (!shopManager.isHasAdminPermission()) return;
 
     if (shopManager.customers.isEmpty()) {
-      view.printEmptyItem();
+      outPut.printEmptyItem();
       return;
     }
 
     while (true) {
       customerManager.showCustomerList();
 
-      view.printCustomerMenu(OperationState.DELETE);
+      outPut.printCustomerMenu(OperationState.DELETE);
       // select menu
       String inputString = scan.nextLine();
-      view.printEmptyLine();
+      outPut.printEmptyLine();
 
       if (inputString.equalsIgnoreCase("q")) break;
 
@@ -168,62 +162,4 @@ public class CustomerController {
     }
   }
 
-  public void viewProfileByCustomerId(int customerId) {
-    if (!shopManager.isHasBothPermission()) return;
-
-    int itemIndex = customerManager.getCustomerIndexItemById(customerId);
-
-    if (itemIndex == -1){
-      view.printNotFound();
-      return;
-    }
-    // View Profile
-    showProfile(itemIndex);
-  }
-
-  private void viewProfileByItemIndex(int searchIndex){
-    if (!shopManager.isHasBothPermission()) return;
-
-    int itemIndex = customerManager.searchByItemIndex(searchIndex);
-
-    if (itemIndex == -1){
-      view.printNotFound();
-      return;
-    }
-    // View Profile
-    showProfile(itemIndex);
-  }
-
-  private void showProfile(int itemIndex){
-    if (!shopManager.isHasBothPermission()) return;
-
-    view.printDetail(shopManager.customers.get(itemIndex));
-    view.printText("\n Do you want to update? (y/n)  : ");
-
-    String inputString = scan.nextLine();
-    if (!inputString.equalsIgnoreCase("y")) {
-      view.printCancel();
-      return;
-    }
-
-    updateForm(itemIndex);
-  }
-
-  private void updateForm(int indexItem){
-    if (!shopManager.isHasBothPermission()) return;
-
-    Customer selectedItem = shopManager.customers.get(indexItem);
-    Customer updateItem = customerManager.updateProfile(selectedItem);
-
-    view.printText("\n Confirm to update? (y/n)  : ");
-    String inputString = scan.nextLine();
-
-    if (!inputString.equalsIgnoreCase("y")) {
-      view.printCancel();
-      return;
-    }
-
-    // Update Customer
-    customerManager.updateItem(selectedItem, updateItem);
-  }
 }

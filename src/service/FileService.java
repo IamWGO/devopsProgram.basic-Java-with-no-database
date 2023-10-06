@@ -1,5 +1,6 @@
 package service;
 
+
 import dataclass.*;
 import manager.ShopManager;
 import utility.stats.FileState;
@@ -9,24 +10,44 @@ import java.io.*;
 import java.time.LocalDateTime;
 import java.util.Scanner;
 
-
 public class FileService {
   String filepath = "src/datafiles/";
   String filename;
 
-  ShopManager mainObject;
+  ShopManager shopManager;
   MainState mainState;
   FileState fileState;
 
-  public FileService(ShopManager mainObject, MainState mainState, FileState fileState) {
-    this.mainObject = mainObject;
+  public FileService(ShopManager shopManager, MainState mainState, FileState fileState) {
+    this.shopManager = shopManager;
     this.mainState = mainState;
     this.fileState = fileState;
+  }
+  public void chooseString(String choice){
+    switch (choice.toUpperCase()) {
+      case "ADMIN" :
+        filename = filepath + "Admin.txt";
+      case "PRODUCT" : {
+        filename = filepath + "Product.txt";
+      }
+      case "CUSTOMER" : {
+        filename = filepath + "Customer.txt";
+      }
+      case "ORDER" : {
+        filename = filepath + "Order.txt";
+      }
+      case "ORDER_ITEM" : {
+        filename = filepath + "OrderItem.txt";
+      }
+      break;
+      default:
+        throw new IllegalStateException("Unexpected value: " + choice.toUpperCase());
+    }
   }
 
   public void choose(){
 
-    switch (mainObject.getMainState()) {
+    switch (shopManager.getMainState()) {
       case ADMIN -> filename = filepath + "Admin.txt";
       case PRODUCT -> filename = filepath + "Product.txt";
       case CUSTOMER -> filename = filepath + "Customer.txt";
@@ -34,10 +55,10 @@ public class FileService {
       case ORDER_ITEM -> filename = filepath + "OrderItem.txt";
     }
 
-    switch (mainObject.getFileState()) {
+    switch (shopManager.getFileState()) {
       case READ -> readFile();
-      case NEW_LINE -> addNewLine(mainObject.getWriteToFileText());
-      case OVERWRITE -> overwriteFile(mainObject.getWriteToFileText());
+      case NEW_LINE -> addNewLine(shopManager.getWriteToFileText());
+      case OVERWRITE -> overwriteFile(shopManager.getWriteToFileText());
     }
 
   }
@@ -67,7 +88,7 @@ public class FileService {
         if (contentLine.isEmpty()) continue;
 
         // save to TaskList
-        switch (mainObject.getMainState()) {
+        switch (shopManager.getMainState()) {
           case ADMIN -> addNewAdmin(contentLine);
           case PRODUCT -> addNewProduct(contentLine);
           case CUSTOMER -> addNewCustomer(contentLine);
@@ -130,7 +151,7 @@ public class FileService {
       String username = parts[0];
       String password = parts[1];
       Admin newItem = new Admin(username, password);
-      mainObject.addNewAdmin(newItem);
+      shopManager.addNewAdmin(newItem);
 
     } catch (IllegalStateException ex) {  // Skip
       System.out.println("Invalid input string. Expected 2 fields." + ex);
@@ -153,7 +174,7 @@ public class FileService {
 
       Customer newItem = new Customer(customerId, firstname, lastname, username, password,
               email,address,zipCode,country,isActive);
-      mainObject.addNewCustomer(newItem);
+      shopManager.addNewCustomer(newItem);
     } catch (ArrayIndexOutOfBoundsException ex) {
       //System.out.println("Empty line in" + filename);
     } catch (IllegalStateException ex) {  // Skip
@@ -172,7 +193,7 @@ public class FileService {
       boolean isSoldOut =  parts[4].equals("1");
       boolean isActive =  parts[5].equals("1");
       Product newItem = new Product(productId, productName,productDetail, price, isSoldOut, isActive);
-      mainObject.addNewProduct(newItem);
+      shopManager.addNewProduct(newItem);
     } catch (ArrayIndexOutOfBoundsException ex) {
       //System.out.println("Empty line in" + filename);
     } catch (IllegalStateException ex) {  // Skip
@@ -192,7 +213,7 @@ public class FileService {
       LocalDateTime completeDate = FormatService.stringToLocalDate(parts[5]);
 
       Order newItem = new Order(orderId,customerId,remark,isPending,orderDate,completeDate);
-      mainObject.addNewOrder(newItem);
+      shopManager.addNewOrder(newItem);
     } catch (ArrayIndexOutOfBoundsException ex) {
       //System.out.println("Empty line in" + filename);
     } catch (IllegalStateException ex) {  // Skip
@@ -212,7 +233,7 @@ public class FileService {
       double salePrice = FormatService.StringToDouble(parts[5]);
 
       OrderItem newItem = new OrderItem(orderItemId, orderId, productId, amount, fullPrice, salePrice);
-      mainObject.addNewOrderItem(newItem);
+      shopManager.addNewOrderItem(newItem);
     } catch (ArrayIndexOutOfBoundsException ex) {
       //System.out.println("Empty line in" + filename);
     } catch (IllegalStateException ex) {  // Skip

@@ -4,7 +4,7 @@ import dataclass.Order;
 import dataclass.OrderItem;
 import dataclass.Product;
 import utility.stats.MainState;
-import utility.view.OrderView;
+import view.OrderView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +12,7 @@ import java.util.Scanner;
 
 public class OrderManager {
   Scanner scan = new Scanner(System.in);
-  OrderView view = new OrderView();
+  OrderView outPut = new OrderView();
   ShopManager shopManager;
   AuthManager authManager;
   public OrderManager(ShopManager shopManager) {
@@ -29,16 +29,13 @@ public class OrderManager {
   }
 
   public void confirmOrder() {
-    if (!shopManager.isHasCustomerPermission()) {
-      authManager.doLogin();
-      return;
-    }
+    if (!shopManager.isHasCustomerPermission()) return;
 
-    view.printText("\n Du you want to update profile? (y/n)  : ");
+    outPut.print("\n Du you want to update profile? (y/n)  : ");
 
     String inputString = scan.nextLine();
     if (!inputString.equalsIgnoreCase("y")) {
-      view.printCancel();
+      outPut.printCancel();
       return;
     }
 
@@ -63,7 +60,7 @@ public class OrderManager {
     // clear temp order
     shopManager.tempOrderItems = new ArrayList<>();
     // Print order confirmed
-    view.printOrderConfirmed();
+    outPut.printOrderConfirmed();
   }
 
   public void deleteOrder(int itemIndex){
@@ -100,7 +97,7 @@ public class OrderManager {
     // Rewrite file because we remove an item form ArrayList
     rewriteFile();
 
-    view.printUpdateResult();
+    outPut.printUpdatedResult();
   }
 
   public void orderHistory(int customerId){
@@ -136,16 +133,16 @@ public class OrderManager {
   public void printOrderList(ArrayList<Order> orders){
     if (!shopManager.isHasBothPermission()) return;
 
-    view.printOrderHeadLine();
+    outPut.printOrderHeadLine();
     if (orders.isEmpty()) {
-      view.printNotFound();
+      outPut.printNotFound();
       return;
     }
 
     for (int i = 0; i < orders.size(); i++) {
       String customerName = getCustomerName(orders.get(i).getCustomerId());
       double totalPurchase = getTotalPurchase(orders.get(i).getOrderId());
-      view.printOrderRow(i, customerName, totalPurchase, orders.get(i));
+      outPut.printOrderRow(i, customerName, totalPurchase, orders.get(i));
       // get Order detail
       //getOrderDetail(i);
     }
@@ -156,14 +153,14 @@ public class OrderManager {
 
     int selectedIndex = searchOrderByIndex(orderIndexId);
     if (selectedIndex == -1){
-      view.printNotFound();
+      outPut.printNotFound();
       return;
     }
 
     // Get Order Detail
     Order orderItem = shopManager.orders.get(selectedIndex);
     String customerName  = getCustomerName(orderItem.getCustomerId());
-    view.printOrderDetail(customerName , orderItem);
+    outPut.printOrderDetail(customerName , orderItem);
 
     // List order item
     ArrayList<OrderItem> orderItems = getOrderItems(orderItem.getOrderId());
@@ -174,7 +171,7 @@ public class OrderManager {
     shopManager.orders.get(itemIndex).setPending();
     rewriteFile();
 
-    view.printUpdateResult();
+    outPut.printUpdatedResult();
   }
 
   public int searchOrderByIndex(int searchId){
@@ -241,12 +238,7 @@ public class OrderManager {
   public int searchByInputNumber(String inputString){
     try {
       int choice = Integer.parseInt(inputString);
-      // if choice is not in range then return -1
-      if (choice < 0 || choice > (shopManager.orders.size())) {
-        return -1;
-      }
-      // return selected index
-      return choice - 1;
+      return (choice < 0 || choice > (shopManager.orders.size())) ? -1 : choice - 1;
     } catch (NumberFormatException ex) {
       // if user input string then return -1
       return  -1;
@@ -280,17 +272,17 @@ public class OrderManager {
   }
 
   public void listOrderItems(ArrayList<OrderItem> orderItems) {
-    view.printOrderItemHeadLine();
+    outPut.printOrderItemHeadLine();
     if (orderItems.isEmpty()) {
-      view.printNotFound();
+      outPut.printNotFound();
     } else {
       for (int i = 0; i < orderItems.size(); i++) {
         // Get product Name
         String productName = getProductItemByProductId(orderItems.get(i).getProductId()).getProductName();
-        view.printOrderItemRow(i,productName, orderItems.get(i));
+        outPut.printOrderItemRow(i,productName, orderItems.get(i));
       }
     }
-    view.printOrderFooter();
+    outPut.printEndOfList();
   }
 
   public Product getProductItemByProductId(int productId){

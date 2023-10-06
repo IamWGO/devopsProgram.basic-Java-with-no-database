@@ -1,20 +1,26 @@
 package manager;
 
-import service.FileService;
 import dataclass.*;
-import shop.Backend;
-import shop.Frontend;
+import manager.AuthManager;
+import service.FileService;
 import utility.stats.FileState;
 import utility.stats.MainState;
-import utility.view.DefaultView;
+import view.OrderView;
+import view.OutPut;
 
 import java.util.ArrayList;
 import java.util.Scanner;
 
 public class ShopManager {
-  DefaultView view  = new DefaultView(this);
   Scanner scan = new Scanner(System.in);
+  OutPut outPut = new OrderView();
+  //composition technic
   public AuthManager authObject = new AuthManager(this);
+
+  public ShopManager() {
+    // get all data to ArrayList when program loaded
+    readAllFiles();
+  }
 
   FileService fileService;
   public MainState mainState;
@@ -33,53 +39,91 @@ public class ShopManager {
   boolean isCustomerLogin = false;
   int loginCustomerId = 0;
 
-  // get all data to ArrayList when MainController loaded
-  public ShopManager() {
-    readAllFiles();
+  //---------------- Permission Control
+  public void loginForNewCustomer(int customerId){
+    isCustomerLogin = true;
+    setLoginCustomerId(customerId);
   }
 
-/*TODO :
-   1. check: read all files in the MainController : Admin, Customer, Product, Order, OrderList
-   2. use Composition technic
-   3. File manager create, read, write : FileManager
-   4. Helper class : converting type, Read write file
-*  */
+  public boolean isHasAdminPermission(){
+    if (!getIsAdminLogin())  outPut.printNoPermission();
+    return getIsAdminLogin();
+  }
 
-  public void menu(){
-    // get data from text files
+  public boolean isHasCustomerPermission(){
+    if (!getIsCustomerLogin())  outPut.printNoPermission();
+    return getIsCustomerLogin();
+  }
 
-    boolean run = true;
-    while (run) {
-      printMenu();
-      // select menu
-      String choice = scan.nextLine();
-      view.printEmptyLine();
+  public boolean isHasBothPermission(){
+    boolean isHasPermission = (getIsCustomerLogin() || getIsAdminLogin());
+    if (!isHasPermission)  outPut.printNoPermission();
+    return isHasPermission;
+  }
 
-      // toUpperCase to check Q command
-      switch (choice.toUpperCase()) {
-        case "1" -> {
-          this.setIsAdmin(true);
-          authObject.doLogin();
-          if (this.getIsAdminLogin() && this.getIsAdmin()) {
-            Backend backend = new Backend(this, authObject);
-            backend.menu();
-          }
-        }
-        case "2" -> {
-          this.setIsAdmin(false);
-          Frontend frontend = new Frontend(this, authObject);
-          frontend.menu();
-        }
-        case "Q" -> {
-          view.printText("Exit Program :)");
-          run = false; // quit while loop
-        }
-        default -> view.printText("Input a number or Q to exit program\n");
-      }
+  //---------------- Read/Write file control state
+  public MainState getMainState(){
+    return mainState;
+  }
+  public void setMainState(MainState state) {
+    mainState = state;
+  }
+
+  //----------------- Manage File Methods -------------------
+  public FileState getFileState(){
+    return fileState;
+  }
+  public String getWriteToFileText(){
+    return writeToFileText;
+  }
+
+  public void addNewAdmin(Admin newItem) {
+    this.admins.add(newItem);
+  }
+
+  // Get newItem from FileManager->addNewCustomer
+  public void addNewCustomer(Customer newItem) {
+    this.customers.add(newItem);
+  }
+  // Get newItem from FileManager->addNewProduct
+  public void addNewProduct(Product newItem) {
+    this.products.add(newItem);
+  }
+  // Get newItem from FileManager->addNewOrder
+  public void addNewOrder(Order newItem) {
+    this.orders.add(newItem);
+  }
+  // Get newItem from FileManager->addNewOrderItem
+  public void addNewOrderItem(OrderItem newItem) {
+    this.orderItems.add(newItem);
+  }
+
+  // Read all files when program loaded
+  public void readAllFiles(){
+    //ADMIN,PRODUCT,CUSTOMER,ORDER,ORDERITEM,
+    for (MainState mainStateItem : MainState.values()) {
+      mainState = mainStateItem;
+      fileState = FileState.READ;
+      fileService = new FileService(this, mainState, fileState);
+      fileService.choose();
     }
-
   }
 
+  public void addNewLine(String contentLine){
+    this.writeToFileText = contentLine;
+    this.fileState = FileState.NEW_LINE;
+    fileService.choose();
+  }
+
+  public void overwriteFile(String contentLines){
+    this.writeToFileText = contentLines;
+    //Write file
+    this.fileState = FileState.OVERWRITE;
+    fileService.choose();
+    //
+  }
+
+  //----------------- getter and setter
   public boolean getIsAdmin() {
     return isAdmin;
   }
@@ -90,33 +134,6 @@ public class ShopManager {
 
   public boolean getIsCustomerLogin() {
     return isCustomerLogin;
-  }
-
-  public MainState getMainState(){
-    return mainState;
-  }
-
-  public FileState getFileState(){
-    return fileState;
-  }
-  public String getWriteToFileText(){
-    return writeToFileText;
-  }
-
-  public boolean isHasAdminPermission(){
-    if (!getIsAdminLogin())  view.printNoPermission();
-    return getIsAdminLogin();
-  }
-
-  public boolean isHasCustomerPermission(){
-    if (!getIsCustomerLogin())  view.printNoPermission();
-    return getIsCustomerLogin();
-  }
-
-  public boolean isHasBothPermission(){
-    boolean isHasPermission = (getIsCustomerLogin() || getIsAdminLogin());
-    if (!isHasPermission)  view.printNoPermission();
-    return isHasPermission;
   }
 
   public int getLoginCustomerId() {
@@ -141,68 +158,5 @@ public class ShopManager {
 
   public void setLoginCustomerId(int customerId){
     loginCustomerId = customerId;
-  }
-
-  public void loginForNewCustomer(int customerId){
-    isCustomerLogin = true;
-    setLoginCustomerId(customerId);
-  }
-
-  public void addNewAdmin(Admin newItem) {
-    this.admins.add(newItem);
-  }
-
-  // Get newItem from FileManager->addNewCustomer
-  public void addNewCustomer(Customer newItem) {
-    this.customers.add(newItem);
-  }
-  // Get newItem from FileManager->addNewProduct
-  public void addNewProduct(Product newItem) {
-    this.products.add(newItem);
-  }
-  // Get newItem from FileManager->addNewOrder
-  public void addNewOrder(Order newItem) {
-    this.orders.add(newItem);
-  }
-  // Get newItem from FileManager->addNewOrderItem
-  public void addNewOrderItem(OrderItem newItem) {
-    this.orderItems.add(newItem);
-  }
-
-  public void readAllFiles(){
-    //Loop enum to reduce lines
-    //ADMIN,PRODUCT,CUSTOMER,ORDER,ORDERITEM,
-    for (MainState mainStateItem : MainState.values()) {
-      mainState = mainStateItem;
-      fileState = FileState.READ;
-      fileService = new FileService(this, mainState, fileState);
-      fileService.choose();
-    }
-  }
-
-  //TODO : Add item
-  public void addNewLine(String contentLine){
-    this.writeToFileText = contentLine;
-    this.fileState = FileState.NEW_LINE;
-    fileService.choose();
-  }
-
-  //TODO : Update and Delete
-  public void overwriteFile(String contentLines){
-    this.writeToFileText = contentLines;
-    //Write file
-    this.fileState = FileState.OVERWRITE;
-    fileService.choose();
-    //
-  }
-
-  void printMenu() {
-    System.out.println("""
-            ::::::::::::::::::: Main Menu :::::::::::::::::::
-            1. Backend
-            2. Frontend
-            Q. Exit Program
-            :::::::::::::::::::::::::::::::::::::::::::::::::::::::""");
-    System.out.print("Input choice: ");
   }
 }

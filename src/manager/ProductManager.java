@@ -3,14 +3,16 @@ package manager;
 import dataclass.OrderItem;
 import dataclass.Product;
 import utility.stats.MainState;
-import utility.view.ProductView;
+import utility.stats.OperationState;
+import view.ProductView;
 
 import java.util.ArrayList;
 import java.util.Scanner;
 
 public class ProductManager {
   Scanner scan = new Scanner(System.in);
-  ProductView view = new ProductView();
+  ProductView outPut = new ProductView();
+
   ShopManager shopManager;
   OrderManager orderManager;
   public ProductManager(ShopManager shopManager) {
@@ -18,14 +20,58 @@ public class ProductManager {
     this.orderManager = new OrderManager(shopManager);
   }
 
-  public void showProductList(){
-    for (int i = 0; i < shopManager.products.size(); i++) {
-      view.printRow(i, shopManager.products.get(i));
+  //TODO : Frontend
+  public void frontendProductList(){
+    showProductList();
+
+    boolean run = true;
+    while (run) {
+      outPut.printSelectToCartMenu(shopManager.tempOrderItems);
+      // select menu
+      String choice = scan.nextLine();
+
+      // toUpperCase to check Q command
+      switch (choice.toUpperCase()) {
+        case "1" -> showProductList();
+        case "2" -> addProductToCart();
+        case "3" -> viewCart();
+        case "4" -> {
+          if (shopManager.tempOrderItems.isEmpty()) outPut.printMenuWarning();
+          else  deleteOrderItem();
+        }
+        case "5" -> {
+          if (shopManager.tempOrderItems.isEmpty()) outPut.printMenuWarning();
+          else  orderManager.confirmOrder();
+        }
+        case "Q" ->  run = false;
+        default -> outPut.printMenuWarning();
+      }
     }
-    view.printFooter();
   }
 
-  public void addToCart(int itemIndex){
+  private void addProductToCart() {
+    while (true) {
+      showProductList();
+
+      outPut.printAddToCartMenu(OperationState.ADD);
+      // select menu
+      String inputString = scan.nextLine();
+      outPut.printEmptyLine();
+
+      if (inputString.equalsIgnoreCase("q")) break;
+
+      int itemIndex = searchByInputNumber(inputString);
+      if (itemIndex == -1) {
+        outPut.printNotFound();
+        return;
+      }
+      //Add to cart
+      addToCart(itemIndex);
+    }
+
+  }
+
+  private void addToCart(int itemIndex){
     boolean isNewItem = true;
     Product selectedItem = shopManager.products.get(itemIndex);
     for (int i = 0; i < shopManager.tempOrderItems.size(); i++) {
@@ -41,72 +87,46 @@ public class ProductManager {
     if (isNewItem) {
       // Add to cart if new product
       orderManager.addTempOrderItem(selectedItem, 1);
-      view.printSuccessAddTempOrderItem(selectedItem);
+      outPut.printSuccessAddTempOrderItem(selectedItem);
     }
   }
 
-  public Product newItemForm(){
-    view.printText("::::: New Product ::::: \n");
-    String productName = newItemInputForm("Product Name");
-    String productDetail = newItemInputForm("Product Detail");
-    double price;
-    do {
-      String priceString = newItemInputForm("Price");
+  private void viewCart() {
+    // List selected product items (order items)
+    orderManager.listOrderItems(shopManager.tempOrderItems);
+  }
+  private void deleteOrderItem() {
+
+    while (true) {
+      viewCart();
+
+      outPut.printAddToCartMenu(OperationState.DELETE);
+      // select menu
+      String inputString = scan.nextLine();
+      outPut.printEmptyLine();
+      if (inputString.equalsIgnoreCase("q")) break;
+
+      int itemIndex = -1;
       try {
-        price = Double.parseDouble(priceString);
-        break;
-      } catch (NumberFormatException e) {
-        view.printText("Price have to be number!! \n");
+        int choice = Integer.parseInt(inputString);
+        // if choice is not in range then return -1
+        if (choice > 0 || choice < (shopManager.tempOrderItems.size())) {
+          itemIndex = choice-1;
+        }
+      } catch (NumberFormatException ex) {
+        outPut.printNotFound();
+        return;
       }
 
-    } while(true);
-
-    int productId = getNextId();
-    return new Product(productId, productName, productDetail, price);
-  }
-
-  public void addNewItem(Product newItem){
-    String contentLine = newItem.objectToLineFormat();
-    shopManager.products.add(newItem);
-    shopManager.addNewLine(contentLine);
-
-    view.printSuccessAddProduct(newItem);
-  }
-
-  public Product updateItemForm(Product selectedItem){
-    view.printText("::::: Update Product ::::: \n");
-    view.printText("-- Enter to skip edit --  \n");
-    String productName = updateItemInputForm(selectedItem.getProductName(),"Product Name");
-    String productDetail = updateItemInputForm(selectedItem.getProductName(),"Product Name");
-
-    double price;
-    do {
-      String priceString = updateItemInputForm(selectedItem.getPriceString(),"price");
-      try {
-        price = Double.parseDouble(priceString);
-        break;
-      } catch (NumberFormatException e) {
-        view.printText("Price have to be number!! \n");
+      if (itemIndex == -1) {
+        outPut.printNotFound();
+        return;
       }
 
-    } while(true);
+      // remove item
+      removeTempOrderItem(itemIndex);
 
-    return new Product(selectedItem.getProductId(), productName, productDetail, price);
-
-  }
-
-  public void updateItem(Product selectedItem, Product updateItem){
-    selectedItem.updateItem(updateItem);
-    view.printUpdateResult(updateItem);
-    // Overwrite file
-    rewriteFile();
-  }
-
-  public void removeProductItem(int itemIndex) {
-    // remove Item
-    shopManager.products.remove(itemIndex);
-    // Rewrite file because we remove an item form ArrayList
-    rewriteFile();
+    }
   }
 
   public void removeTempOrderItem(int itemIndex){
@@ -117,13 +137,109 @@ public class ProductManager {
     // get deleted product
     for (int i = 0; i < shopManager.products.size(); i++) {
       if (shopManager.products.get(i).getProductId() == selectedItem.getProductId()) {
-        view.printSuccessDeleteTempOrderItem(shopManager.products.get(i));
+        outPut.printSuccessDeleteTempOrderItem(shopManager.products.get(i));
         break;
       }
     }
   }
 
-  // ++ Help Methods ++ ------------------------------------------------------------------------------
+  //---------------------------------------------------
+  public void showProductList(){
+    outPut.printHeadLine();
+    for (int i = 0; i < shopManager.products.size(); i++) {
+      outPut.printRow(i, shopManager.products.get(i));
+    }
+    outPut.printEndOfList();
+  }
+
+  public Product newItemForm(){
+    outPut.println("::::: New Product ::::: \n");
+    String productName = newItemInputForm("Product Name");
+    String productDetail = newItemInputForm("Product Detail");
+    double price;
+    do {
+      String priceString = newItemInputForm("Price");
+      try {
+        price = Double.parseDouble(priceString);
+        break;
+      } catch (NumberFormatException e) {
+        outPut.println("Price have to be number!! \n");
+      }
+
+    } while(true);
+
+    int productId = getNextId();
+    return new Product(productId, productName, productDetail, price);
+  }
+
+  public int getNextId(){
+    if (shopManager.products.isEmpty()) return 1;
+
+    int maxProductId = -1;
+
+    for (Product product : shopManager.products) {
+      if (product.getProductId() > maxProductId) {
+        maxProductId = product.getProductId();
+      }
+    }
+    maxProductId++;
+    return maxProductId;
+  }
+
+  public void addNewItem(Product newItem){
+    //set mainState to get filename
+    shopManager.mainState = MainState.PRODUCT;
+
+    String contentLine = newItem.objectToLineFormat();
+    shopManager.products.add(newItem);
+    shopManager.addNewLine(contentLine);
+
+    outPut.printAddedResult();
+    outPut.println(" >> " + newItem.getProductName());
+  }
+
+  public Product updateItemForm(Product selectedItem){
+    outPut.println("::::: Update Product ::::: \n");
+    outPut.println("-- Enter to skip edit --  \n");
+    String productName = updateItemInputForm(selectedItem.getProductName(),"Product Name");
+    String productDetail = updateItemInputForm(selectedItem.getProductName(),"Product Detail");
+
+    double price;
+    do {
+      String priceString = updateItemInputForm(selectedItem.getPriceString(),"price");
+      try {
+        price = Double.parseDouble(priceString);
+        break;
+      } catch (NumberFormatException e) {
+        outPut.print("Price have to be number!! \n");
+      }
+
+    } while(true);
+
+    return new Product(selectedItem.getProductId(), productName, productDetail, price);
+
+  }
+
+  public void updateItem(Product selectedItem, Product updateItem){
+    selectedItem.updateItem(updateItem);
+    outPut.printUpdatedResult();
+    // Overwrite file
+    rewriteFile();
+
+    outPut.printUpdatedResult();
+    outPut.println(" >> " + updateItem.getProductName());
+  }
+
+  public void removeProductItem(int itemIndex) {
+    // remove Item
+    shopManager.products.remove(itemIndex);
+    // Rewrite file because we remove an item form ArrayList
+    rewriteFile();
+
+    Product selectedItem = shopManager.products.get(itemIndex);
+    outPut.printDeletedResult();
+    outPut.println(" >> " + selectedItem.getProductName());
+  }
 
   public void rewriteFile() {
     if (!shopManager.isHasAdminPermission()) return;
@@ -145,29 +261,10 @@ public class ProductManager {
     shopManager.overwriteFile(contentLines);
   }
 
-  public int getNextId(){
-    if (shopManager.products.isEmpty()) return 1;
-
-    int maxProductId = -1;
-
-    for (Product product : shopManager.products) {
-      if (product.getProductId() > maxProductId) {
-        maxProductId = product.getProductId();
-      }
-    }
-    maxProductId++;
-    return maxProductId;
-  }
-
   public int searchByInputNumber(String inputNumber){
     try {
       int choice = Integer.parseInt(inputNumber);
-      // if choice is not in range then return -1
-      if (choice < 0 || choice > (shopManager.products.size())) {
-        return -1;
-      }
-      // return selected index
-      return choice - 1;
+      return (choice < 0 || choice > (shopManager.products.size())) ? -1 : choice - 1;
     } catch (NumberFormatException ex) {
       // if user input string then return -1
       return  -1;
@@ -175,15 +272,15 @@ public class ProductManager {
   }
 
   public String newItemInputForm(String label){
-    view.printText(label + " : ");
+    outPut.print(label + " : ");
     return scan.nextLine();
   }
 
   public String updateItemInputForm(String oldString, String label) {
-    view.printText(label + " : " + oldString + "  > ");
+    outPut.print(label + " : " + oldString + "  > ");
     String inputString = scan.nextLine();
+
     return (inputString.isEmpty()) ? oldString : inputString;
   }
-
 
 }

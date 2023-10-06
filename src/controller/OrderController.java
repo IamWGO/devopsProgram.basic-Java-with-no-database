@@ -1,26 +1,25 @@
-package controllers;
+package controller;
 
 import dataclass.Order;
 import manager.OrderManager;
 import manager.ShopManager;
-import shop.Frontend;
 import utility.stats.MainState;
 import utility.stats.OperationState;
-import utility.view.OrderView;
+import view.OrderView;
+import view.ProductView;
 
 import java.util.ArrayList;
 import java.util.Scanner;
 
 public class OrderController {
   Scanner scan = new Scanner(System.in);
-  OrderView view = new OrderView();
-
+  OrderView outPut = new OrderView();
   ShopManager shopManager;
   OrderManager orderManager;
 
   public OrderController(ShopManager shopManager) {
     this.shopManager = shopManager;
-    orderManager =  new OrderManager(shopManager);
+    orderManager = new OrderManager(shopManager);
   }
 
   public void menu() {
@@ -28,10 +27,10 @@ public class OrderController {
 
     boolean run = true;
     while (run) {
-      view.printBackendMenu();
+      outPut.printBackendMenu();
       // select menu
       String choice = scan.nextLine();
-      view.printEmptyLine();
+      outPut.printEmptyLine();
 
       // toUpperCase to check Q command
       switch (choice.toUpperCase()) {
@@ -40,7 +39,7 @@ public class OrderController {
         case "3" -> update();
         case "4" -> delete();
         case "Q" -> run = false; // quit while loop
-        default -> view.printMenuWarning();
+        default -> outPut.printMenuWarning();
       }
     }
   }
@@ -54,20 +53,20 @@ public class OrderController {
     if (!shopManager.isHasAdminPermission()) return;
 
     if (shopManager.products.isEmpty()) {
-      view.printEmptyItem();
+      outPut.printEmptyItem();
       return;
     }
 
     orderManager.showAllItems();
 
-    view.printBackendOrderMenu(OperationState.SEARCH);
+    outPut.printBackendOrderMenu(OperationState.SEARCH);
     // select menu
     String inputString = scan.nextLine();
-    view.printEmptyLine();
+    outPut.printEmptyLine();
 
     int itemIndex = orderManager.searchByInputNumber(inputString);
     if (itemIndex == -1){
-      view.printNotFound();
+      outPut.printNotFound();
       return;
     }
 
@@ -83,16 +82,16 @@ public class OrderController {
     while (true) {
       listAll();
 
-      view.printBackendOrderMenu(OperationState.DELETE);
+      outPut.printBackendOrderMenu(OperationState.DELETE);
       // select menu
       String inputString = scan.nextLine();
-      view.printEmptyLine();
+      outPut.printEmptyLine();
 
       if (inputString.equalsIgnoreCase("q")) break;
       int itemIndex = orderManager.searchByInputNumber(inputString);
 
       if (itemIndex == -1){
-        view.printNotFound();
+        outPut.printNotFound();
         return;
       }
       // Update item
@@ -107,7 +106,7 @@ public class OrderController {
     if (!shopManager.isHasAdminPermission()) return;
 
     if (shopManager.orders.isEmpty()) {
-      view.printEmptyItem();
+      outPut.printEmptyItem();
       return;
     }
 
@@ -120,16 +119,16 @@ public class OrderController {
       }
       orderManager.printOrderList(orders);
 
-      view.printBackendOrderMenu(OperationState.DELETE);
+      outPut.printBackendOrderMenu(OperationState.DELETE);
       // select menu
       String inputString = scan.nextLine();
-      view.printEmptyLine();
+      outPut.printEmptyLine();
 
       if (inputString.equalsIgnoreCase("q")) break;
       int itemIndex = orderManager.searchByInputNumber(inputString);
 
       if (itemIndex == -1){
-        view.printNotFound();
+        outPut.printNotFound();
         return;
       }
 
@@ -138,25 +137,4 @@ public class OrderController {
 
     }
   }
-
-  private void confirmOrder(){
-    if (!shopManager.isHasCustomerPermission()) {
-      Frontend frontend = new Frontend(shopManager, shopManager.authObject);
-      frontend.authenticationMenu();
-      //mainObject.authObject.customerLogin();
-      return;
-    }
-
-    if (shopManager.tempOrderItems.isEmpty()) {
-      view.printEmptyItem();
-      return;
-    }
-
-    // confirm order and clear temp order items
-    orderManager.confirmOrder();
-    shopManager.tempOrderItems = new ArrayList<>();
-
-  }
-
-
 }

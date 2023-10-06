@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/Ecommerce-basic-Java-with-no-database.iml" filepath="$PROJECT_DIR$/Ecommerce-basic-Java-with-no-database.iml" />
+      <module fileurl="file://$PROJECT_DIR$/PowerFizzShop.iml" filepath="$PROJECT_DIR$/PowerFizzShop.iml" />
     </modules>
   </component>
 </project>

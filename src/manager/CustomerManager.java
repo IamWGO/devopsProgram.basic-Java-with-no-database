@@ -2,33 +2,108 @@ package manager;
 
 import dataclass.Customer;
 import utility.stats.MainState;
-import utility.view.CustomerView;
+import view.CustomerView;
 
 import java.util.ArrayList;
 import java.util.Scanner;
 
 public class CustomerManager {
   Scanner scan = new Scanner(System.in);
-  CustomerView view = new CustomerView();
+  CustomerView outPut = new CustomerView();
 
   ShopManager shopManager;
   public CustomerManager(ShopManager shopManager) {
     this.shopManager = shopManager;
   }
 
+
+
+  public void register(){
+    // show form input
+    Customer newItem = newItemForm();
+
+    //Confirm
+    outPut.print("\n Confirm to register? (y/n)  : ");
+    String inputString = scan.nextLine();
+
+    if (!inputString.equalsIgnoreCase("y")) {
+      outPut.printCancel();
+      return;
+    }
+
+    // add new Item
+    addNewItem(newItem);
+    // Set customer
+    shopManager.loginForNewCustomer(newItem.getCustomerId());
+  }
+
   public void showCustomerList(){
     if (!shopManager.isHasBothPermission()) return;
 
-    view.printHeadLine();
+    outPut.printHeadLine();
     for (int i = 0; i < shopManager.customers.size(); i++) {
-      view.printRow(i, shopManager.customers.get(i));
+      outPut.printRow(i, shopManager.customers.get(i));
     }
-    view.printFooter();
+    outPut.printEndOfList();
+  }
+
+  public void showProfile(int itemIndex){
+    if (!shopManager.isHasBothPermission()) return;
+
+    outPut.printDetail(shopManager.customers.get(itemIndex));
+    outPut.print("\n Do you want to update? (y/n)  : ");
+
+    String inputString = scan.nextLine();
+    if (!inputString.equalsIgnoreCase("y")) {
+      outPut.printCancel();
+      return;
+    }
+
+    updateForm(itemIndex);
+  }
+
+  public void updateForm(int indexItem){
+    if (!shopManager.isHasBothPermission()) return;
+
+    Customer selectedItem = shopManager.customers.get(indexItem);
+    Customer updateItem = updateProfile(selectedItem);
+
+    outPut.print("\n Confirm to update? (y/n)  : ");
+    String inputString = scan.nextLine();
+
+    if (!inputString.equalsIgnoreCase("y")) {
+      outPut.printCancel();
+      return;
+    }
+
+    // Update Customer
+    updateItem(selectedItem, updateItem);
+  }
+
+  public void viewProfileByCustomerId(int customerId) {
+    if (!shopManager.isHasBothPermission()) return;
+
+    int itemIndex = getCustomerIndexItemById(customerId);
+
+    if (itemIndex == -1){
+      outPut.printNotFound();
+      return;
+    }
+    // View Profile
+    showProfile(itemIndex);
   }
 
 
+  public int searchByItemIndex(int itemIndex){
+    //search start from 0 ... n
+    if (itemIndex < 0 || itemIndex > (shopManager.customers.size())) {
+      return -1;
+    }
+    return itemIndex;
+  }
+
   public Customer newItemForm(){
-    view.printText("::::: Register Customer ::::: \n");
+    outPut.println("::::: Register Customer ::::: ");
     String firstname = newItemInputForm("firstname");
     String lastname = newItemInputForm("lastname");
     String username = newItemInputForm("username");
@@ -45,15 +120,17 @@ public class CustomerManager {
   }
 
   public void addNewItem(Customer newItem){
+    //set mainState to get filename
+    shopManager.mainState = MainState.CUSTOMER;
     String contentLine = newItem.objectToLineFormat();
     shopManager.customers.add(newItem);
     shopManager.addNewLine(contentLine);
-    view.printAddResult(newItem);
+    outPut.printAddedResult();
   }
 
   public Customer updateProfile(Customer selectedItem){
-    view.printText("::::: Update Customer ::::: \n");
-    view.printText("-- Enter to skip edit --  \n");
+    outPut.println("::::: Update Customer ::::: ");
+    outPut.println("-- Enter to skip edit --  ");
     String firstname = updateItemInputForm(selectedItem.getFirstname(),"firstname");
     String lastname = updateItemInputForm(selectedItem.getLastname(),"lastname");
     String username = updateItemInputForm(selectedItem.getUsername(),"username");
@@ -70,7 +147,7 @@ public class CustomerManager {
   public void updateItem(Customer selectedItem, Customer updateItem){
     // Update Customer
     selectedItem.updateItem(updateItem);
-    view.printUpdateResult(updateItem);
+    outPut.printUpdatedResult();
 
     // Overwrite file
     rewriteFile();
@@ -90,18 +167,10 @@ public class CustomerManager {
       shopManager.customers.remove(itemIndex);
       // Overwrite file
       rewriteFile();
-      view.printDeleteResult(true, selectedItem);
+      outPut.printDeleteResult(true, selectedItem);
     } else {
-      view.printDeleteResult(false, selectedItem);
+      outPut.printDeleteResult(false, selectedItem);
     }
-  }
-
-  public boolean checkIfHasOrder(int customerId) {
-    for (int i = 0; i < shopManager.orders.size(); i++) {
-      if ( shopManager.orders.get(i).getCustomerId() == customerId)
-        return true;
-    }
-    return false;
   }
 
   public void rewriteFile() {
@@ -121,14 +190,14 @@ public class CustomerManager {
     shopManager.overwriteFile(contentLines);
   }
 
-  public int getCustomerIndexItemById(int customerId){
-    for (int i = 0; i < shopManager.customers.size(); i++) {
-      if (shopManager.customers.get(i).getCustomerId() == customerId) {
-        return i;
-      }
+  public boolean checkIfHasOrder(int customerId) {
+    for (int i = 0; i < shopManager.orders.size(); i++) {
+      if ( shopManager.orders.get(i).getCustomerId() == customerId)
+        return true;
     }
-    return -1;
+    return false;
   }
+
   public int getNextId(){
     if (shopManager.customers.isEmpty()) return 1;
 
@@ -143,23 +212,19 @@ public class CustomerManager {
     return maxProductId;
   }
 
-  public int searchByItemIndex(int itemIndex){
-    //search start from 0 ... n
-    if (itemIndex < 0 || itemIndex > (shopManager.customers.size())) {
-      return -1;
+  public int getCustomerIndexItemById(int customerId){
+    for (int i = 0; i < shopManager.customers.size(); i++) {
+      if (shopManager.customers.get(i).getCustomerId() == customerId) {
+        return i;
+      }
     }
-    return itemIndex;
+    return -1;
   }
 
   public int searchByInputNumber(String inputString){
     try {
       int choice = Integer.parseInt(inputString);
-      // if choice is not in range then return -1
-      if (choice < 0 || choice > (shopManager.customers.size())) {
-        return -1;
-      }
-      // return selected index
-      return choice - 1;
+      return (choice < 0 || choice > (shopManager.customers.size())) ? -1 : choice - 1;
     } catch (NumberFormatException ex) {
       // if user input string then return -1
       return  -1;
@@ -167,12 +232,12 @@ public class CustomerManager {
   }
 
   public String newItemInputForm(String label){
-    view.printText(label + " : ");
+    outPut.print(label + " : ");
     return scan.nextLine();
   }
 
   public String updateItemInputForm(String oldString, String label) {
-    view.printText(label + " : " + oldString + "  > ");
+    outPut.print(label + " : " + oldString + "  > ");
     String inputString = scan.nextLine();
     return (inputString.isEmpty()) ? oldString : inputString;
   }
